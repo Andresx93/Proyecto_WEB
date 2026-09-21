@@ -1,0 +1,40 @@
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: onedrive_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin_onedrive
+      MINIO_ROOT_PASSWORD: password123
+    volumes:
+      - ./minio_data:/data
+    command: server /data --console-address ":9001"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: onedrive_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin_onedrive
+      - MINIO_SECRET_KEY=password123
+    depends_on:
+      - minio
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: onedrive_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
