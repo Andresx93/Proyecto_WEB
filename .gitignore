@@ -1,0 +1,15 @@
+# Dependencias de Node
+node_modules/
+dist/
+
+# Entornos de Python
+venv/
+__pycache__/
+*.pyc
+
+# Volumen de Docker (No subir los archivos personales de MinIO)
+minio_data/
+
+# Variables de entorno y SO
+.env
+.DS_Store
