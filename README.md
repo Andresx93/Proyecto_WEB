@@ -26,9 +26,10 @@ Abre tu terminal y ejecuta:
 git clone https://github.com/Andresx93/Proyecto_WEB.git
 cd mi-onedrive-local
 ```
-**2. componer el Docker*
-```
+**2. componer el Docker**
+
 Abre tu terminal y ejecuta:
+```
 
 docker compose up --build
 ```
