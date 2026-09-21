@@ -21,6 +21,12 @@ Este repositorio contiene el código fuente de una aplicación web tipo OneDrive
 
 **1. Clonar el repositorio**
 Abre tu terminal y ejecuta:
-```bash
+```bash'''
+
 git clone [https://github.com/TU_USUARIO/mi-onedrive-local.git](https://github.com/TU_USUARIO/mi-onedrive-local.git)
 cd mi-onedrive-local
+
+**2. componer el Docker*
+Abre tu terminal y ejecuta:
+
+docker compose up --build
