@@ -48,10 +48,12 @@ function App() {
 
   return (
     <main className="app-container">
-      <header>
+    <header>
         <h1>Mi OneDrive Local</h1>
         <p>Almacenamiento seguro impulsado por Docker y MinIO</p>
       </header>
+      
+      
       
       <section className="upload-section">
         <label className="upload-btn">
