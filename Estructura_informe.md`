@@ -1,0 +1,77 @@
+# 📄 ESTRUCTURA DEL INFORME FINAL - CABBAGE CLOUD
+
+Este documento sirve como guía detallada para la elaboración del documento de Word requerido para la entrega final. Sigue este orden para cumplir con todos los puntos de la rúbrica.
+
+---
+
+## 1. PÁGINAS PRELIMINARES
+- **Portada:**
+  - Logo de la Universidad.
+  - Título: *Cabbage Cloud: Plataforma de Almacenamiento en la Nube Sostenible*.
+  - Nombres completos de los integrantes.
+  - Nombre del Sensei.
+  - Fecha y Ciudad.
+- **Contraportada:**
+  - Descripción breve del proyecto.
+  - Definición de roles (ej. Samuel: Lead Developer & Cloud Architect).
+- **Índice General:** Generado automáticamente.
+- **Tabla de Contenido:** Secciones y subsecciones.
+- **Tabla de Figuras:** Lista de todas las capturas de pantalla y diagramas.
+
+---
+
+## 2. PLANTEAMIENTO DEL PROBLEMA Y OBJETIVOS
+- **Planteamiento del Problema:**
+  - Describir la saturación de los servicios de nube tradicionales y la necesidad de soluciones más transparentes, sostenibles y accesibles para emprendedores locales.
+  - Mencionar la importancia de tener un control real sobre la infraestructura de datos.
+- **Objetivo General:**
+  - Desarrollar una aplicación web profesional de almacenamiento en la nube basada en una arquitectura de microservicios, integrando un modelo de negocio e-commerce y estándares de accesibilidad.
+- **Objetivos Específicos:**
+  - Implementar un frontend interactivo y responsivo utilizando **React.js**.
+  - Construir una API REST robusta con **FastAPI (Python)** para la gestión de archivos y planes.
+  - Desplegar un sistema de almacenamiento de objetos compatible con S3 mediante **MinIO**.
+  - Garantizar la portabilidad total del ecosistema mediante el uso de **Docker** y **Docker Compose**.
+
+---
+
+## 3. ANÁLISIS, DISEÑO Y DESARROLLO
+### A. Metodología de Trabajo
+- **Marco Ágil:** Descripción del uso de **Scrum**.
+- **Sprints:** Explicar la división en 4 sprints semanales.
+- **Seguimiento:** Mencionar el uso de **Kanban** para el registro y monitoreo de actividades.
+
+### B. Arquitectura del Sistema
+- **Modelo de Capas:**
+  - *Capa de Presentación:* React.js (Frontend).
+  - *Capa de Lógica/Negocio:* FastAPI (Backend).
+  - *Capa de Datos:* MinIO Object Storage.
+- **Infraestructura:** Explicar la contenerización con Docker para aislar los servicios.
+
+### C. Detalle de Funcionalidades (Mapeo con Rúbrica)
+- **E-commerce:** Descripción del catálogo de planes, el carrito de compras y la pasarela de pago simulada.
+- **Gestión de Archivos:** Flujo de subida, listado, descarga y eliminación de documentos.
+- **IA (Inteligencia Artificial):** Explicar el "Recomendador de Planes Inteligente" que analiza el perfil del usuario para sugerir la mejor opción.
+- **Accesibilidad:** Detallar los 3 botones (Tamaño de texto, Alto Contraste y Lector de Voz).
+- **Validaciones:** Explicar el uso de Expresiones Regulares (**RegEx**) para validar correos y celulares en el formulario de PQR.
+- **Integraciones:** Descripción de la inserción de Google Maps y los links a redes sociales.
+
+---
+
+## 4. ANEXOS Y EVIDENCIAS (La parte visual)
+- **Capturas de Pantalla:**
+  - Inicio y Slide de publicidad.
+  - Tabla de archivos con documentos subidos.
+  - Proceso de compra (Carrito $\rightarrow$ Pago).
+  - Formulario de PQR con error de validación (demostrando el RegEx).
+  - Sección de "Nuestro Equipo" con los perfiles.
+- **Código Fuente Clave:**
+  - Fragmentos de `main.py` (Endpoints de archivos y planes).
+  - Fragmentos de `App.jsx` (Lógica de la IA y validaciones).
+  - Archivo `docker-compose.yml`.
+- **Registro de Errores:** Documentar el error de importación del logo y cómo se resolvió mediante rutas dinámicas.
+
+---
+
+## 5. CIERRE
+- **Conclusiones:** Reflexión sobre el aprendizaje de la arquitectura de microservicios, la gestión de contenedores y el desarrollo de interfaces modernas.
+- **Recomendaciones:** Sugerencias de mejora (ej. implementar autenticación JWT, añadir backups automáticos o expandir el catálogo de productos).
