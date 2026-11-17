@@ -1,335 +1,368 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import logo from './assets/logo.png'
 import './App.css'
 
-function App() {
-  const [files, setFiles] = useState([]);
-  const [plans, setPlans] = useState([]);
-  const [devs, setDevs] = useState([]);
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [activeAccordion, setActiveAccordion] = useState(null);
-  const [fontSize, setFontSize] = useState(16);
-  const [contrast, setContrast] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [pqrForm, setPqrForm] = useState({ nombre: '', correo: '', celular: '', mensaje: '' });
+const API = 'http://localhost:8000'
 
-  const toggleFontSize = () => setFontSize(prev => prev === 16 ? 20 : 16);
-  const toggleContrast = () => setContrast(!contrast);
+const SLIDES = [
+  { titulo: 'Tus archivos, en capas y a salvo', texto: 'Cifrado y copias en cada capa, como las hojas de un repollo.', tono: '#2f6b4a' },
+  { titulo: 'Seed: empieza sin pagar', texto: '100 GB gratis para siempre, sin tarjeta.', tono: '#4f8a3f' },
+  { titulo: 'Sprout: crece con tu negocio', texto: '1 TB para emprendedores que ya cosechan clientes.', tono: '#7a2e6e' },
+  { titulo: 'Harvest: potencia para empresas', texto: 'Capacidad ilimitada y disponibilidad del 99.9 %.', tono: '#1f4f5c' },
+  { titulo: 'Centros de datos con menos huella', texto: 'Infraestructura pensada para gastar menos energía.', tono: '#5b6b1f' },
+]
 
-  const fetchFiles = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/files');
-      const data = await response.json();
-      setFiles(data.archivos || []);
-    } catch (error) {
-      console.error("Error al obtener archivos:", error);
-    }
-  };
+const PERFILES = [
+  { id: 'est', label: 'Estudiante', res: 'Seed Plan (100 GB, gratis): suficiente para tus trabajos y apuntes.' },
+  { id: 'emp', label: 'Emprendedor', res: 'Sprout Plan (1 TB): espacio para crecer sin pensar en el límite.' },
+  { id: 'org', label: 'Empresa', res: 'Harvest Plan (ilimitado): equipos grandes y disponibilidad alta.' },
+]
 
-  const fetchPlans = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/plans');
-      const data = await response.json();
-      setPlans(data.planes || []);
-    } catch (error) {
-      console.error("Error al obtener planes:", error);
-    }
-  };
+const ACORDEON = [
+  { id: 'mision', t: 'Nuestra misión', c: 'Liderar la transformación digital con almacenamiento en la nube sostenible y accesible para todos los emprendedores.' },
+  { id: 'vision', t: 'Nuestra visión', c: 'Ser para 2030 la infraestructura de nube más confiable y ecológica de la región, impulsando a miles de empresas.' },
+  { id: 'objetivos', t: 'Objetivos', c: 'Garantizar 99.9 % de disponibilidad, usar IA para gestionar archivos y reducir la huella de carbono de nuestros centros de datos.' },
+]
 
-  const fetchDevs = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/devs');
-      const data = await response.json();
-      setDevs(data.desarrolladores || []);
-    } catch (error) {
-      console.error("Error al obtener desarrolladores:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchFiles();
-    fetchPlans();
-    fetchDevs();
-  }, []);
-
-  const handleUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8000/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      if (response.ok) fetchFiles();
-    } catch (error) {
-      console.error("Error al subir:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = (filename) => {
-    window.location.href = `http://localhost:8000/api/files/${filename}`;
-  };
-
-  const handleDelete = async (filename) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar ${filename}?`)) return;
-    try {
-      const response = await fetch(`http://localhost:8000/api/files/${filename}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) fetchFiles();
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-    }
-  };
-
-  const addToCart = (plan) => {
-    setCart([...cart, plan]);
-    alert(`${plan.nombre} añadido al carrito`);
-  };
-
-  const removeFromCart = (index) => {
-    const newCart = [...cart];
-    newCart.splice(index, 1);
-    setCart(newCart);
-  };
-
-  const handlePayment = () => {
-    alert("✅ ¡Pago procesado exitosamente! Bienvenido a Cabbage Cloud.");
-    setCart([]);
-    setShowCheckout(false);
-  };
-
-  const recommendPlan = () => {
-    const options = ["Estudiante", "Emprendedor", "Empresa"];
-    const choice = prompt(`Selecciona tu perfil:\n1. ${options[0]}\n2. ${options[1]}\n3. ${options[2]}`);
-    if (choice === '1') alert(" la IA recomienda: Seed Plan (Gratis) - Perfecto para tus estudios.");
-    else if (choice === '2') alert(" la IA recomienda: Sprout Plan (1 TB) - Ideal para hacer crecer tu negocio.");
-    else if (choice === '3') alert(" la IA recomienda: Harvest Plan (Ilimitado) - Potencia total para tu empresa.");
-    else alert("Por favor elige una opción válida (1, 2 o 3).");
-  };
-
-  const handlePqrSubmit = (e) => {
-    e.preventDefault();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\+?(\d{1,3})?[- .]?(\d{10})[- .]?$/;
-    if (!emailRegex.test(pqrForm.correo)) {
-      alert("Por favor ingresa un correo electrónico válido.");
-      return;
-    }
-    if (!phoneRegex.test(pqrForm.celular)) {
-      alert("Por favor ingresa un celular válido (10 dígitos).");
-      return;
-    }
-    alert("✅ Tu solicitud PQR ha sido enviada exitosamente.");
-    setPqrForm({ nombre: '', correo: '', celular: '', mensaje: '' });
-  };
-
-  const total = cart.reduce((sum, p) => sum + p.precio, 0);
-
+function Cabbage() {
   return (
-    <div className="app-container" style={{ fontSize: `${fontSize}px`, filter: contrast ? 'contrast(150%)' : 'none' }}>
-      <div className="accessibility-bar">
-        <button className="acc-btn" onClick={toggleFontSize}>Aumentar Texto</button>
-        <button className="acc-btn" onClick={toggleContrast}>Alto Contraste</button>
-        <button className="acc-btn" onClick={() => alert('Lector de voz activado (Simulación)')}>Lector de Voz</button>
-      </div>
-
-      <header>
-        <div className="nav-links">
-          <a href="#inicio">Inicio</a>
-          <a href="#servicios">Planes</a>
-          <a href="#drive">Mi Nube</a>
-          <a href="#contacto">Contacto</a>
-          <a href="#nosotros">Nosotros</a>
-        </div>
-        <div className="logo-container">
-          <img src="/src/assets/logo.png" alt="Cabbage Cloud Logo" className="main-logo" onError={(e) => e.target.style.display='none'} />
-          <h1>Cabbage Cloud</h1>
-        </div>
-        <p>Sowing the seeds of your digital future</p>
-      </header>
-
-      <section id="inicio" className="slide-container">
-        <div className="slide-content">
-          <p>🚀 Almacenamiento Seguro e Ilimitado</p>
-        </div>
-      </section>
-
-      <section className="accordion">
-        <div className="accordion-item">
-          <div className="accordion-header" onClick={() => setActiveAccordion(activeAccordion === 'mision' ? null : 'mision')}>
-            <span>Nuestra Misión</span>
-            <span>{activeAccordion === 'mision' ? '▲' : '▼'}</span>
-          </div>
-          <div className={`accordion-body ${activeAccordion === 'mision' ? 'active' : ''}`}>
-            Liderar la transformación digital mediante soluciones de almacenamiento en la nube sostenibles y accesibles para todos los emprendedores.
-          </div>
-        </div>
-        <div className="accordion-item">
-          <div className="accordion-header" onClick={() => setActiveAccordion(activeAccordion === 'vision' ? null : 'vision')}>
-            <span>Nuestra Visión</span>
-            <span>{activeAccordion === 'vision' ? '▲' : '▼'}</span>
-          </div>
-          <div className={`accordion-body ${activeAccordion === 'vision' ? 'active' : ''}`}>
-            Ser para el año 2030 la infraestructura de nube más confiable y ecológica de la región, impulsando el crecimiento de miles de empresas.
-          </div>
-        </div>
-        <div className="accordion-item">
-          <div className="accordion-header" onClick={() => setActiveAccordion(activeAccordion === 'objetivos' ? null : 'objetivos')}>
-            <span>Objetivos</span>
-            <span>{activeAccordion === 'objetivos' ? '▲' : '▼'}</span>
-          </div>
-          <div className={`accordion-body ${activeAccordion === 'objetivos' ? 'active' : ''}`}>
-            Garantizar disponibilidad del 99.9% de los datos, implementar IA para la gestión de archivos y reducir la huella de carbono de nuestros centros de datos.
-          </div>
-        </div>
-      </section>
-
-      <section id="servicios" className="plans-section">
-        <h2>📦 Planes de Almacenamiento</h2>
-        <button className="ai-recommend-btn" onClick={recommendPlan}>🤖 IA: Ayúdame a elegir un plan</button>
-        <div className="plans-grid">
-          {plans.map(plan => (
-            <div key={plan.id} className="plan-card">
-              <div>
-                <h3>{plan.nombre}</h3>
-                <p>{plan.descripcion}</p>
-                <div className="plan-price">${plan.precio} <span style={{fontSize: '1rem'}}>{plan.capacidad}</span></div>
-              </div>
-              <button className="btn-add-cart" onClick={() => addToCart(plan)}>Añadir al Carrito</button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {cart.length > 0 && (
-        <section className="cart-section">
-          <h2>🛒 Tu Carrito de Compras</h2>
-          {cart.map((item, index) => (
-            <div key={index} className="cart-item">
-              <span>{item.nombre} - ${item.precio}</span>
-              <button onClick={() => removeFromCart(index)} style={{color: 'red', cursor: 'pointer', border: 'none', background: 'none'}}>❌</button>
-            </div>
-          ))}
-          <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.2rem', marginTop: '1rem' }}>
-            Total: ${total.toFixed(2)}
-          </div>
-          <button className="btn-checkout" onClick={() => setShowCheckout(true)}>Proceder al Pago</button>
-        </section>
-      )}
-
-      {showCheckout && (
-        <div className="cart-section" style={{ borderColor: '#2e7d32', border: '2px solid' }}>
-          <h2>💳 Pasarela de Pago (Ficticia)</h2>
-          <p>Estás adquiriendo planes por un total de: <strong style={{fontSize: '1.2rem'}}>${total.toFixed(2)}</strong></p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
-            <label>Número de Tarjeta: <input type="text" placeholder="XXXX XXXX XXXX XXXX" style={{width: '100%', padding: '8px', marginTop: '5px'}} /></label>
-            <label>Vencimiento: <input type="text" placeholder="MM/AA" style={{width: '100%', padding: '8px', marginTop: '5px'}} /></label>
-            <label>CVV: <input type="text" placeholder="123" style={{width: '100%', padding: '8px', marginTop: '5px'}} /></label>
-          </div>
-          <button className="btn-checkout" onClick={handlePayment}>Confirmar Pago</button>
-          <button onClick={() => setShowCheckout(false)} style={{marginTop: '10px', background: 'none', border: 'none', cursor: 'pointer', width: '100%'}}>Cancelar</button>
-        </div>
-      )}
-
-      <section id="drive" className="cloud-section">
-        <h2 style={{textAlign: 'center'}}>☁️ Cabbage Drive - Panel de Usuario</h2>
-        <div className="upload-section">
-          <label className="upload-btn">
-            {loading ? "Subiendo archivo..." : "Subir nuevo documento"}
-            <input type="file" onChange={handleUpload} disabled={loading} hidden />
-          </label>
-        </div>
-        <table className="files-table">
-          <thead>
-            <tr>
-              <th>Nombre del Documento</th>
-              <th>Tamaño (Bytes)</th>
-              <th>Fecha de Modificación</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map((file, index) => (
-              <tr key={index}>
-                <td style={{ fontWeight: 'bold' }}>{file.nombre}</td>
-                <td>{file.tamaño_bytes}</td>
-                <td>{new Date(file.fecha_modificacion).toLocaleString()}</td>
-                <td>
-                  <button onClick={() => handleDownload(file.nombre)} className="btn-download">Descargar</button>
-                  <button onClick={() => handleDelete(file.nombre)} className="btn-delete">Eliminar</button>
-                </td>
-              </tr>
-            ))}
-            {files.length === 0 && (
-              <tr>
-                <td colSpan="4" className="empty-state" style={{textAlign: 'center', padding: '20px'}}>No hay archivos en tu nube. ¡Sube el primero!</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-
-      <section id="contacto" className="contact-section">
-        <div className="pqr-form">
-          <h2>📩 Formulario de PQR</h2>
-          <form onSubmit={handlePqrSubmit}>
-            <label>Nombre Completo:</label>
-            <input type="text" value={pqrForm.nombre} onChange={(e) => setPqrForm({...pqrForm, nombre: e.target.value})} required />
-            <label>Correo Electrónico:</label>
-            <input type="email" value={pqrForm.correo} onChange={(e) => setPqrForm({...pqrForm, correo: e.target.value})} required />
-            <label>Celular:</label>
-            <input type="text" value={pqrForm.celular} onChange={(e) => setPqrForm({...pqrForm, celular: e.target.value})} required />
-            <label>Mensaje:</label>
-            <textarea rows="4" value={pqrForm.mensaje} onChange={(e) => setPqrForm({...pqrForm, mensaje: e.target.value})} required></textarea>
-            <button type="submit" className="btn-submit-pqr">Enviar Solicitud</button>
-          </form>
-        </div>
-        <div className="map-container">
-          <h2>📍 Ubicación Central</h2>
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.47286328463!2s-74.081747!3s4.60971!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKuTjYuMTA3NfC0yNC40OTQ4M1L!5e0!3m2!1ses!2scl!4v1633000000000"
-            allowFullScreen=""
-            loading="lazy">
-          </iframe>
-        </div>
-      </section>
-
-      <section id="nosotros" className="devs-section">
-        <h2>👨‍💻 Nuestro Equipo</h2>
-        <div className="devs-grid">
-          {devs.map(dev => (
-            <div key={dev.id} className="dev-card">
-              <img src={dev.foto} alt={dev.nombre} className="dev-photo" />
-              <div className="dev-name">{dev.nombre}</div>
-              <div className="dev-role">{dev.rol}</div>
-              <div className="dev-phone">{dev.celular}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <footer>
-        <div className="social-links">
-          <a href="https://instagram.com" target="_blank">Instagram</a>
-          <a href="https://facebook.com" target="_blank">Facebook</a>
-          <a href="https://wa.me/123456789" target="_blank">Whatsapp</a>
-          <a href="https://linkedin.com" target="_blank">LinkedIn</a>
-        </div>
-        <p>© 2026 Cabbage Cloud - Todos los derechos reservados</p>
-        <div className="privacy-text">
-          <strong>Manejo de Datos Personales:</strong> Cabbage Cloud se compromete a proteger la privacidad de sus usuarios.
-          Los datos recolectados a través de nuestros formularios de PQR y registros de usuario son utilizados exclusivamente
-          para la prestación de servicios y soporte técnico, cumpliendo con las normativas vigentes de protección de datos.
-        </div>
-      </footer>
-    </div>
+    <svg viewBox="0 0 200 200" className="cabbage" aria-hidden="true">
+      <circle cx="100" cy="100" r="92" fill="#cfe3bd" />
+      <circle cx="100" cy="100" r="74" fill="none" stroke="#2f6b4a" strokeWidth="3" />
+      <path d="M100 100 C 60 90, 50 50, 100 30 C 150 50, 140 90, 100 100Z" fill="#8fbf7a" />
+      <circle cx="100" cy="100" r="54" fill="none" stroke="#7a2e6e" strokeWidth="2" strokeDasharray="6 8" />
+      <circle cx="100" cy="100" r="34" fill="#eef3e6" stroke="#17352a" strokeWidth="3" />
+      <circle cx="100" cy="100" r="14" fill="#17352a" />
+    </svg>
   )
 }
 
-export default App;
+function App() {
+  const [files, setFiles] = useState([])
+  const [plans, setPlans] = useState([])
+  const [devs, setDevs] = useState([])
+  const [cart, setCart] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(null)
+  const [big, setBig] = useState(false)
+  const [contrast, setContrast] = useState(false)
+  const [reading, setReading] = useState(false)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [slide, setSlide] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [recomend, setRecomend] = useState(null)
+  const [toast, setToast] = useState('')
+  const [errs, setErrs] = useState({})
+  const [pqr, setPqr] = useState({ nombre: '', correo: '', celular: '', mensaje: '' })
+  const [pago, setPago] = useState({ tarjeta: '', venc: '', cvv: '' })
+  const timer = useRef(null)
+
+  const avisar = (m) => {
+    setToast(m)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setToast(''), 4000)
+  }
+
+  const get = async (path, set, key, nombre) => {
+    try {
+      const r = await fetch(`${API}${path}`)
+      const d = await r.json()
+      set(d[key] || [])
+    } catch (e) {
+      console.error(`Error al obtener ${nombre}:`, e)
+    }
+  }
+  const fetchFiles = () => get('/api/files', setFiles, 'archivos', 'archivos')
+
+  useEffect(() => {
+    fetchFiles()
+    get('/api/plans', setPlans, 'planes', 'planes')
+    get('/api/devs', setDevs, 'desarrolladores', 'desarrolladores')
+  }, [])
+
+  useEffect(() => {
+    if (paused) return
+    const id = setInterval(() => setSlide((s) => (s + 1) % SLIDES.length), 6000)
+    return () => clearInterval(id)
+  }, [paused])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--fs', big ? '20px' : '16px')
+    document.documentElement.style.fontSize = big ? '20px' : '16px'
+    document.body.classList.toggle('hc', contrast)
+  }, [big, contrast])
+
+  const leer = () => {
+    if (!('speechSynthesis' in window)) return avisar('Tu navegador no soporta lectura en voz alta.')
+    if (reading) { window.speechSynthesis.cancel(); setReading(false); return }
+    const u = new SpeechSynthesisUtterance(document.querySelector('main').innerText.slice(0, 1500))
+    u.lang = 'es-CO'
+    u.onend = () => setReading(false)
+    window.speechSynthesis.speak(u)
+    setReading(true)
+  }
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const fd = new FormData()
+    fd.append('file', file)
+    setLoading(true)
+    try {
+      const r = await fetch(`${API}/api/upload`, { method: 'POST', body: fd })
+      if (r.ok) { fetchFiles(); avisar(`${file.name} subido a tu nube.`) }
+      else avisar('No se pudo subir el archivo. Revisa que el bucket exista en MinIO.')
+    } catch { avisar('No hay conexión con el servidor. Verifica que el backend esté activo.') }
+    finally { setLoading(false); e.target.value = '' }
+  }
+
+  const handleDelete = async (name) => {
+    if (!window.confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return
+    try {
+      const r = await fetch(`${API}/api/files/${name}`, { method: 'DELETE' })
+      if (r.ok) { fetchFiles(); avisar(`${name} eliminado.`) }
+    } catch (e) { console.error('Error al eliminar:', e) }
+  }
+
+  const addToCart = (p) => { setCart([...cart, p]); avisar(`${p.nombre} añadido al carrito.`) }
+  const removeFromCart = (i) => setCart(cart.filter((_, k) => k !== i))
+  const total = cart.reduce((s, p) => s + p.precio, 0)
+
+  const handlePayment = (e) => {
+    e.preventDefault()
+    const x = {}
+    if (!/^\d{4} ?\d{4} ?\d{4} ?\d{4}$/.test(pago.tarjeta)) x.tarjeta = 'Escribe 16 dígitos, por ejemplo 4242 4242 4242 4242.'
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(pago.venc)) x.venc = 'Usa el formato MM/AA.'
+    if (!/^\d{3,4}$/.test(pago.cvv)) x.cvv = 'Son 3 o 4 dígitos.'
+    setErrs(x)
+    if (Object.keys(x).length) return
+    avisar('Pago procesado. Bienvenido a Cabbage Cloud.')
+    setCart([]); setShowCheckout(false); setPago({ tarjeta: '', venc: '', cvv: '' })
+  }
+
+  const handlePqr = (e) => {
+    e.preventDefault()
+    const x = {}
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pqr.correo)) x.correo = 'Escribe un correo válido, como nombre@dominio.com.'
+    if (!/^\+?(\d{1,3})?[- .]?(\d{10})[- .]?$/.test(pqr.celular)) x.celular = 'Escribe un celular de 10 dígitos.'
+    setErrs(x)
+    if (Object.keys(x).length) return
+    avisar('Tu solicitud PQR fue enviada. Te responderemos por correo.')
+    setPqr({ nombre: '', correo: '', celular: '', mensaje: '' })
+  }
+
+  const campo = (id, label, value, onChange, props = {}) => (
+    <div className="campo">
+      <label htmlFor={id}>{label}</label>
+      <input id={id} value={value} onChange={onChange} aria-invalid={!!errs[id]} aria-describedby={errs[id] ? `${id}-e` : undefined} {...props} />
+      {errs[id] && <p className="error" id={`${id}-e`}>{errs[id]}</p>}
+    </div>
+  )
+
+  return (
+    <>
+      <a className="saltar" href="#contenido">Saltar al contenido</a>
+      <div className="acc-bar" role="group" aria-label="Opciones de accesibilidad">
+        <button onClick={() => setBig(!big)} aria-pressed={big}>{big ? 'Texto normal' : 'Aumentar texto'}</button>
+        <button onClick={() => setContrast(!contrast)} aria-pressed={contrast}>Alto contraste</button>
+        <button onClick={leer} aria-pressed={reading}>{reading ? 'Detener lectura' : 'Lector de voz'}</button>
+      </div>
+
+      <header className="top">
+        <a href="#inicio" className="marca">
+          <img src={logo} alt="" width="44" height="44" onError={(e) => (e.target.style.display = 'none')} />
+          <span>Cabbage Cloud</span>
+        </a>
+        <nav aria-label="Principal">
+          <a href="#inicio">Inicio</a>
+          <a href="#planes">Planes</a>
+          <a href="#drive">Mi nube</a>
+          <a href="#contacto">Contacto</a>
+          <a href="#nosotros">Nosotros</a>
+        </nav>
+        <a href="#carrito" className="cart-pill">Carrito ({cart.length})</a>
+      </header>
+
+      <main id="contenido">
+        <section id="inicio" className="hero">
+          <div className="hero-copy">
+            <h1>Tus datos, protegidos capa por capa.</h1>
+            <p>Almacenamiento en la nube seguro y sostenible. Sube, descarga y comparte tus archivos desde un solo lugar.</p>
+            <div className="hero-actions">
+              <a className="btn primary" href="#planes">Ver planes</a>
+              <a className="btn ghost" href="#drive">Ir a mi nube</a>
+            </div>
+          </div>
+          <Cabbage />
+        </section>
+
+        <section className="slider" aria-roledescription="carrusel" aria-label="Novedades de Cabbage Cloud"
+          onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+          {SLIDES.map((s, i) => (
+            <article key={s.titulo} className={`slide ${i === slide ? 'on' : ''}`} style={{ '--tono': s.tono }}
+              aria-hidden={i !== slide} aria-label={`Diapositiva ${i + 1} de ${SLIDES.length}`}>
+              <svg viewBox="0 0 120 120" aria-hidden="true" className="slide-art">
+                {[52, 40, 28, 16].map((r, k) => <circle key={r} cx="60" cy="60" r={r} fill="none" stroke="#fff" strokeOpacity={0.25 + k * 0.15} strokeWidth="3" />)}
+              </svg>
+              <div><h2>{s.titulo}</h2><p>{s.texto}</p></div>
+            </article>
+          ))}
+          <div className="slider-ctl">
+            <button onClick={() => setSlide((slide + SLIDES.length - 1) % SLIDES.length)} aria-label="Diapositiva anterior">‹</button>
+            {SLIDES.map((s, i) => (
+              <button key={s.titulo} className={i === slide ? 'dot on' : 'dot'} onClick={() => setSlide(i)} aria-label={`Ir a la diapositiva ${i + 1}`} aria-current={i === slide} />
+            ))}
+            <button onClick={() => setSlide((slide + 1) % SLIDES.length)} aria-label="Diapositiva siguiente">›</button>
+            <button onClick={() => setPaused(!paused)} aria-pressed={paused}>{paused ? 'Reanudar' : 'Pausar'}</button>
+          </div>
+        </section>
+
+        <section className="acordeon" aria-label="Sobre la empresa">
+          {ACORDEON.map((a) => (
+            <div key={a.id} className="ac-item">
+              <h2><button className="ac-head" aria-expanded={open === a.id} aria-controls={`ac-${a.id}`} onClick={() => setOpen(open === a.id ? null : a.id)}>
+                {a.t}<span aria-hidden="true">{open === a.id ? '−' : '+'}</span>
+              </button></h2>
+              <div id={`ac-${a.id}`} role="region" hidden={open !== a.id} className="ac-body">{a.c}</div>
+            </div>
+          ))}
+        </section>
+
+        <section id="planes" className="bloque">
+          <div className="bloque-head">
+            <h2>Planes de almacenamiento</h2>
+            <button className="btn ai" onClick={() => setRecomend(recomend ? null : { sel: null })}>Ayúdame a elegir un plan</button>
+          </div>
+          {recomend && (
+            <div className="ia-panel" role="region" aria-label="Recomendador de planes con IA">
+              <p>¿Cuál describe mejor tu uso?</p>
+              <div className="ia-opts">
+                {PERFILES.map((p) => <button key={p.id} className="btn ghost" onClick={() => setRecomend({ sel: p })}>{p.label}</button>)}
+              </div>
+              {recomend.sel && <p className="ia-res" aria-live="polite">Te recomendamos: {recomend.sel.res}</p>}
+            </div>
+          )}
+          <div className="planes">
+            {plans.length === 0 && <p className="vacio">No pudimos cargar los planes. Verifica que el backend esté activo en el puerto 8000.</p>}
+            {plans.map((p, i) => (
+              <article key={p.id} className={`plan ${i === 1 ? 'dest' : ''}`}>
+                <h3>{p.nombre}</h3>
+                <p className="plan-desc">{p.descripcion}</p>
+                <p className="precio">{p.precio === 0 ? 'Gratis' : `$${p.precio}`}<small> {p.capacidad}</small></p>
+                <button className="btn primary" onClick={() => addToCart(p)}>Añadir al carrito</button>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="carrito" className="bloque carrito" aria-live="polite">
+          <h2>Tu carrito</h2>
+          {cart.length === 0 ? <p className="vacio">Aún no tienes planes. Elige uno arriba para empezar.</p> : (
+            <>
+              <ul>
+                {cart.map((it, i) => (
+                  <li key={i}><span>{it.nombre}</span><span>${it.precio}</span>
+                    <button className="link-btn" onClick={() => removeFromCart(i)} aria-label={`Quitar ${it.nombre}`}>Quitar</button></li>
+                ))}
+              </ul>
+              <p className="total">Total: ${total.toFixed(2)}</p>
+              {!showCheckout && <button className="btn primary" onClick={() => setShowCheckout(true)}>Proceder al pago</button>}
+            </>
+          )}
+          {showCheckout && cart.length > 0 && (
+            <form className="pago" onSubmit={handlePayment} noValidate>
+              <h3>Pasarela de pago (ficticia)</h3>
+              {campo('tarjeta', 'Número de tarjeta', pago.tarjeta, (e) => setPago({ ...pago, tarjeta: e.target.value }), { inputMode: 'numeric', placeholder: '4242 4242 4242 4242', autoComplete: 'off' })}
+              <div className="fila">
+                {campo('venc', 'Vencimiento', pago.venc, (e) => setPago({ ...pago, venc: e.target.value }), { placeholder: 'MM/AA', autoComplete: 'off' })}
+                {campo('cvv', 'CVV', pago.cvv, (e) => setPago({ ...pago, cvv: e.target.value }), { inputMode: 'numeric', placeholder: '123', autoComplete: 'off' })}
+              </div>
+              <div className="hero-actions">
+                <button type="submit" className="btn primary">Confirmar pago</button>
+                <button type="button" className="btn ghost" onClick={() => setShowCheckout(false)}>Cancelar</button>
+              </div>
+            </form>
+          )}
+        </section>
+
+        <section id="drive" className="bloque">
+          <div className="bloque-head">
+            <h2>Cabbage Drive</h2>
+            <label className="btn primary">
+              {loading ? 'Subiendo…' : 'Subir documento'}
+              <input type="file" onChange={handleUpload} disabled={loading} hidden />
+            </label>
+          </div>
+          <div className="tabla-wrap">
+            <table>
+              <caption className="sr">Archivos guardados en tu nube</caption>
+              <thead><tr><th scope="col">Documento</th><th scope="col">Tamaño</th><th scope="col">Modificado</th><th scope="col">Acciones</th></tr></thead>
+              <tbody>
+                {files.map((f) => (
+                  <tr key={f.nombre}>
+                    <th scope="row">{f.nombre}</th>
+                    <td data-label="Tamaño">{f.tamaño_bytes} bytes</td>
+                    <td data-label="Modificado">{new Date(f.fecha_modificacion).toLocaleString('es-CO')}</td>
+                    <td className="acciones">
+                      <a className="btn ghost sm" href={`${API}/api/files/${encodeURIComponent(f.nombre)}`}>Descargar</a>
+                      <button className="btn danger sm" onClick={() => handleDelete(f.nombre)}>Eliminar</button>
+                    </td>
+                  </tr>
+                ))}
+                {files.length === 0 && <tr><td colSpan="4" className="vacio">Tu nube está vacía. Sube tu primer documento.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="contacto" className="bloque dos-col">
+          <form onSubmit={handlePqr} noValidate className="pqr">
+            <h2>Peticiones, quejas y reclamos</h2>
+            {campo('nombre', 'Nombre completo', pqr.nombre, (e) => setPqr({ ...pqr, nombre: e.target.value }), { required: true, autoComplete: 'name' })}
+            {campo('correo', 'Correo electrónico', pqr.correo, (e) => setPqr({ ...pqr, correo: e.target.value }), { type: 'email', required: true, autoComplete: 'email' })}
+            {campo('celular', 'Celular', pqr.celular, (e) => setPqr({ ...pqr, celular: e.target.value }), { type: 'tel', required: true, autoComplete: 'tel', placeholder: '3001234567' })}
+            <div className="campo">
+              <label htmlFor="mensaje">Mensaje</label>
+              <textarea id="mensaje" rows="4" required value={pqr.mensaje} onChange={(e) => setPqr({ ...pqr, mensaje: e.target.value })} />
+            </div>
+            <button type="submit" className="btn primary">Enviar solicitud</button>
+          </form>
+          <div className="mapa">
+            <h2>Dónde estamos</h2>
+            <iframe title="Ubicación de Cabbage Cloud en Google Maps" loading="lazy" allowFullScreen
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.47286328463!2d-74.081747!3d4.60971!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMzYnMzUuNCJOIDc0wrAwNCc1My4zIlc!5e0!3m2!1ses!2sco!4v1633000000000" />
+          </div>
+        </section>
+
+        <section id="nosotros" className="bloque">
+          <h2>Nuestro equipo</h2>
+          <div className="equipo">
+            {devs.map((d) => (
+              <article key={d.id} className="dev">
+                <img src={d.foto} alt={`Foto de ${d.nombre}`} width="88" height="88" />
+                <h3>{d.nombre}</h3>
+                <p>{d.rol}</p>
+                <p className="tel">{d.celular}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <nav aria-label="Redes sociales" className="redes">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://wa.me/123456789" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </nav>
+        <p className="privacidad"><strong>Manejo de datos personales.</strong> Usamos los datos de tus solicitudes PQR y de tu registro solo para prestarte el servicio y darte soporte técnico, conforme a la normativa de protección de datos vigente.</p>
+        <p className="copy">© 2026 Cabbage Cloud. Todos los derechos reservados.</p>
+      </footer>
+
+      <div className="toast" role="status" aria-live="polite">{toast}</div>
+    </>
+  )
+}
+
+export default App
