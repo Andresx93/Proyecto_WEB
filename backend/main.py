@@ -30,9 +30,10 @@ PLANES_ALMACENAMIENTO = [
 
 # Base de Datos de Desarrolladores (Simulación de CRUD de Perfiles)
 DESARROLLADORES = [
-    {"id": 1, "nombre": "Samuel", "rol": "Lead Developer", "celular": "3001234567", "foto": "https://via.placeholder.com/150"},
-    {"id": 2, "nombre": "Integrante 2", "rol": "Frontend Dev", "celular": "3007654321", "foto": "https://via.placeholder.com/150"},
-    {"id": 3, "nombre": "Integrante 3", "rol": "DevOps", "celular": "3009876543", "foto": "https://via.placeholder.com/150"},
+    {"id": 1, "nombre": "Samuel Bustos", "rol": "Product Owner", "celular": "3001234567", "foto": "https://via.placeholder.com/150"},
+    {"id": 2, "nombre": "Miguel Barinas", "rol": "Scrum Master", "celular": "3007654321", "foto": "https://via.placeholder.com/150"},
+    {"id": 3, "nombre": "Samuel Barragan", "rol": "Developer", "celular": "3009876543", "foto": "https://via.placeholder.com/150"},
+    {"id": 4, "nombre": "Daniel Jimenez", "rol": "Developer", "celular": "3009876543", "foto": "https://via.placeholder.com/150"},
 ]
 
 s3_client = boto3.client(
